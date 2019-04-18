@@ -1,15 +1,15 @@
 import socket
 import re
-from requests_toolbelt.multipart import decoder
-import cgi
-import requests
-import base64
+import threading, select
 
-class HttpServer(object):
+
+
+class HTTPServer(object):
 
 	def __init__(self, port=80, ip_addr="127.0.0.1"):
 		self.addr = ip_addr
 		self.port = port
+
 
 
 	def start(self):
@@ -22,24 +22,25 @@ class HttpServer(object):
 		while 1:
 			conn, addr = self.server.accept()
 			print(conn, addr)
-			self.http_parser(conn, addr)
-			conn.close()
-			print("CONN CLOSED")
+			threading.Thread(target=self.http_parser, args=(conn, addr,)).start()
+			
 
 
 	def http_parser(self, conn, addr):
 
+		inout = [conn]
 		request = conn.recv(65538)
 		request = request.decode("utf-8").split("\r\n")
-		print(request)
+		# print(request)
 		# Handling lost packets
 		try:
 			method, page, protocol = request[0].split()
 		except ValueError:
 			return
 		
-		print(method)
+		# print(method)
 		if method == "GET":
+
 			if page[-1] == "/": page += "index.html"
 			try:
 				with open("public"+page, "rb")as p:
@@ -50,24 +51,29 @@ class HttpServer(object):
 			except FileNotFoundError:
 				conn.sendall(b"HTTP/1.0 404 Not Found\r\n\nPage Not Found")
 
-		elif method == "POST":
-			encode_file = conn.recv(65538)
-			
 
-			# print(encode_file)
-			# print("==============")
+		elif method == "POST":
+
+			# recieving the FIle
+			encode_file = conn.recv(65538)
+			while 1:
+				infds, outfds, errfds = select.select(inout, inout, [], 1)
+				print(len(infds), len(outfds))
+
+				if len(infds) != 0:
+					encode_file += conn.recv(65538)
+				else:
+					break
+			
+			# FIle multi/part form-data decoding
 			boundry = encode_file.decode("utf-8").split("\r\n")[0]
 			form_fields = encode_file.decode("utf-8").split(boundry)
-			# print(boundry)
-			# print("----------------")
-			# print(form_fields)
-
+		
 			for field in form_fields:
 
 				data = field.split("\r\n")
 				if len(data) > 3:
-					print(data)
-
+					# print(data)
 					try:
 						filename = re.search('filename="(.*)"', data[1]).group(1)
 
@@ -82,7 +88,6 @@ class HttpServer(object):
 					conn.sendall(b"HTTP/1.0 200 OK\r\n\nUploaded Sucessfully!")
 
 
+		conn.close()
+		print("CONN CLOSED")
 		
-
-s = HttpServer()
-s.start()

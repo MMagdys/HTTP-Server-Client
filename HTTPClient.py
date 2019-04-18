@@ -23,7 +23,9 @@ class HTTPClient(object):
 			self.request_lst = self.request.split()
 			self.request_lst[0] = self.request_lst[0].upper()
 
-			if self.request_lst[0] == "EXIT": break
+			if self.request_lst[0] == "EXIT": 
+				self.server_socket.close()
+				break
 			print(self.request)
 
 			if self.request_lst[0] == "GET":
@@ -75,8 +77,3 @@ class HTTPClient(object):
 
 		self.server_socket.close()
 
-
-
-
-c  = HTTPClient()
-c.server_connect()
