@@ -15,6 +15,7 @@ class HTTPServer(object):
 	def start(self):
 		self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		
 		self.server.bind((self.addr, self.port))
 		self.server.listen()
 
@@ -29,7 +30,14 @@ class HTTPServer(object):
 	def http_parser(self, conn, addr):
 
 		inout = [conn]
-		request = conn.recv(65538)
+		try:
+			request = conn.recv(65538)
+
+		except socket.timeout as e:
+			print("\n[-] Connection Timeout.")
+			protocol = ""
+			return
+		
 		request = request.decode("utf-8").split("\r\n")
 		# print(request)
 		# Handling lost packets
@@ -88,6 +96,9 @@ class HTTPServer(object):
 					conn.sendall(b"HTTP/1.0 200 OK\r\n\nUploaded Sucessfully!")
 
 
+		if protocol == "HTTP/1.1":
+			conn.settimeout(3)
+			self.http_parser(conn, addr)
 		conn.close()
 		print("CONN CLOSED")
 		
