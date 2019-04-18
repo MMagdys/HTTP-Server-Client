@@ -51,50 +51,38 @@ class HttpServer(object):
 				conn.sendall(b"HTTP/1.0 404 Not Found\r\n\nPage Not Found")
 
 		elif method == "POST":
-			file_len = int(request[3].split(":")[1])
-			encode_file = conn.recv(file_len)
+			encode_file = conn.recv(65538)
 			
 
-			print(encode_file)
-
-			try:
-				# TXT File decoding
-				data = encode_file.decode("utf-8").split("\r\n")
-				filename = re.search('filename="(.*)"', data[1]).group(1)
-				body = '\n'.join(encode_file.decode("utf-8").split("\r\n")[4:-6])
-				fb = open("public/uploads/"+filename, "w")
-				fb.write(body)
-				fb.close()
-				conn.sendall(b"HTTP/1.0 200 OK\r\n\nUploaded Sucessfully!")
-
-			except UnicodeDecodeError:
-
-				# print(encode_file)
-				# body = base64.b64decode(encode_file)
-				# print(base64.b64decode(encode_file).split(base64.b64encode("\r\n")))
-				fb = open("file", "w")
-				fb.write(str(encode_file))
-				fb.close()
-
-
-			# base64.b64encode(encode_file)
-			# encode_file = encode_file.body.decode('base64')
 			# print(encode_file)
-			# 
-			
-			# encode_file.save()
-			# f = decoder.MultipartDecoder.from_response(encode_file)
-			# print(f)
-			
-			# print(f)
+			# print("==============")
+			boundry = encode_file.decode("utf-8").split("\r\n")[0]
+			form_fields = encode_file.decode("utf-8").split(boundry)
+			# print(boundry)
+			# print("----------------")
+			# print(form_fields)
 
-			# form = cgi.FieldStorage(encode_file)
-			# print("+++++++++++++++++++++++++++")
-			# print(form)
-			# print(request[-1].split("&"))
+			for field in form_fields:
 
-			
+				data = field.split("\r\n")
+				if len(data) > 3:
+					print(data)
 
+					try:
+						filename = re.search('filename="(.*)"', data[1]).group(1)
+
+					except AttributeError:
+						filename = re.search('name="(.*)"', data[1]).group(1)
+
+					if data[2]: body = '\n'.join(data[4:])
+					else: body = '\n'.join(data[3:])
+					fb = open("public/uploads/"+filename, "w")
+					fb.write(body)
+					fb.close()
+					conn.sendall(b"HTTP/1.0 200 OK\r\n\nUploaded Sucessfully!")
+
+
+		
 
 s = HttpServer()
 s.start()
