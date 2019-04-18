@@ -82,8 +82,8 @@ class HTTPServer(object):
 
 					if data[2]: body = '\n'.join(data[4:])
 					else: body = '\n'.join(data[3:])
-					fb = open("public/uploads/"+filename, "w")
-					fb.write(body)
+					with open("public/uploads/"+filename, "w")as fb:
+						fb.write(body)
 					fb.close()
 					conn.sendall(b"HTTP/1.0 200 OK\r\n\nUploaded Sucessfully!")
 

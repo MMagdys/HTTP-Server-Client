@@ -10,13 +10,6 @@ class HTTPClient(object):
 
 	def server_connect(self):
 
-		try:
-			self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.server_socket.connect((self.server_ip, self.server_port))
-		except ConnectionRefusedError:
-			print("\n[-] Connection Establishment Error: Could not connect to "+ self.server_ip + ":" + str(self.server_port))
-			return
-
 		while 1:
 			print("[" + self.server_ip + "]> ", end='')
 			self.request = input()
@@ -26,40 +19,42 @@ class HTTPClient(object):
 			if self.request_lst[0] == "EXIT": 
 				self.server_socket.close()
 				break
-			print(self.request)
+			# print(self.request)
+
+
+			try:
+				self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				self.server_socket.connect((self.server_ip, self.server_port))
+			except ConnectionRefusedError:
+				print("\n[-] Connection Establishment Error: Could not connect to "+ self.server_ip + ":" + str(self.server_port))
+				return
+
 
 			if self.request_lst[0] == "GET":
+				self.request = self.request.upper()
 				self.server_socket.send(self.request.encode())
 				self.response = self.server_socket.recv(65538)
 				print(self.response)
+
 
 			elif self.request_lst[0] == "POST":
 				try:
 					with open(self.request_lst[1], "rb")as self.f:
 						self.data = self.f.read()
 					self.f.close()
-					print(self.data)
-
+					# print(self.data)
 
 					from requests.packages.urllib3.filepost import encode_multipart_formdata
-
 					(content, header) = encode_multipart_formdata([(self.request_lst[1], self.data)])
-					print(content)
-					print(header)
-					# b.extend(header)
-					# b.extend(content)
-
-					# from requests_toolbelt.multipart import decoder
-
-					# # testEnrollResponse = requests.post(...)
-					# multipart_data = decoder.MultipartDecoder.from_response(b)
-					# print("===========")
-					# print(multipart_data)
+					# print(content)
+					# print(header)
+					
+					self.request = self.request.upper()
 					self.request += "\r\n"
-					b = bytearray()
-					b.extend(self.request.upper().encode())
-					b.extend(header.encode())
-					self.server_socket.sendall(b)
+					self.request_array = bytearray()
+					self.request_array.extend(self.request.upper().encode())
+					self.request_array.extend(header.encode())
+					self.server_socket.sendall(self.request_array)
 					self.server_socket.sendall(content)
 					self.response = self.server_socket.recv(65538)
 					print("[*] "+self.response.decode())
@@ -75,5 +70,5 @@ class HTTPClient(object):
 				print("[-] Unsporrted Request!")
 
 
-		self.server_socket.close()
+		print("[-] Connection Closed")
 
