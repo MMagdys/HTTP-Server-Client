@@ -51,7 +51,7 @@ class HTTPServer(object):
 
 			if page[-1] == "/": page += "index.html"
 			try:
-				with open("public"+page, "rb")as p:
+				with open("public/"+page, "rb")as p:
 					data = p.read()
 				p.close()
 				conn.sendall(b"HTTP/1.0 200 OK\r\n\n"+data)
@@ -97,7 +97,7 @@ class HTTPServer(object):
 
 
 		if protocol == "HTTP/1.1":
-			conn.settimeout(3)
+			conn.settimeout(8)
 			self.http_parser(conn, addr)
 		conn.close()
 		print("CONN CLOSED")
