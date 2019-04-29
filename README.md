@@ -1,5 +1,5 @@
 # HTTP-Server-Client
-HTTP Server implemented using Python 3, that handels GET/POST requests from either a web browser or HTTP client
+HTTP Server implemented using Python 3, that handels GET/POST requests from either a web browser or HTTP client supporting both HTTP/1.0 and HTTP/1.1
 
 ## Getting Started   
 
@@ -10,9 +10,9 @@ HTTP Server implemented using Python 3, that handels GET/POST requests from eith
 # my_server [port_number]
 #  sudo my_server 80
 ```
-HTTP Server will listen on localhost port 80
-***HTTP Server support both HTTP/1.0 and HTTP/1.1, its default protocol is HTTP/1.0***
-
+HTTP Server will listen on localhost port 80   
+*HTTP Server support both HTTP/1.0 and HTTP/1.1, its default protocol is HTTP/1.0*    
+     
 
 ### HTTP Client
 
@@ -31,8 +31,8 @@ HTTP Client will connect to the sever whose ip is 127.0.0.1 on port 80
 > GET index.html http/1.1
 > get index.html
 ```
-***HTTP Client's default protocol is HTTP/1.0***     
-
+*HTTP Client's default protocol is HTTP/1.0*        
+     
 
 **POST request**
 
@@ -41,7 +41,7 @@ HTTP Client will connect to the sever whose ip is 127.0.0.1 on port 80
 > Post file1
 > post downloads/file1
 ```
-***POST request files are encoded using multipart/form-data***     
+*POST request files are encoded using multipart/form-data*     
 
 **Close Connection**
 ```
